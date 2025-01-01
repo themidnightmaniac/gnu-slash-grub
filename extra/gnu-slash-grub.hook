@@ -1,13 +1,10 @@
 # Run gnu-slash-grub on GRUB install/update
 [Trigger]
 Operation = Install
-Operation = Update
+Operation = Upgrade
 Type = Package
 Target = grub
 
 [Action]
-Depends = coreutils
-Depends = findutils
-Depends = grub
 When = PostTransaction
 Exec = /usr/bin/gnu-slash-grub
