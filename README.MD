@@ -1,6 +1,8 @@
 ## gnu-slash-grub
 Fix GRUB boot menu nonsense
 
-Take a look at 'extra/10_linux.example' to see the changes this program applies to the GRUB configuration.
+TL;DR it swaps 'Linux' with 'GNU/Linux' and removes the extra 'Linux' where it's not needed. RMS approved. :thumbsup:
 
-TL;DR it swaps Linux with GNU/Linux and removes extra 'Linux' where it's not needed. RMS Approved. :thumbsup:
+(take a look inside extra/example to see what actually happens)
+ 
+There's also a pacman hook inside extra for running this program whenever grub is updated or (re)installed.
