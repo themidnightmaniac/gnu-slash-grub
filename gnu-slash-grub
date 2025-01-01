@@ -133,5 +133,4 @@ if [ $? -ge 1 ];then
     exit 1
 fi;
 
-printf "Success!"
 exit 0
