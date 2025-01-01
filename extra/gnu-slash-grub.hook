@@ -6,5 +6,6 @@ Type = Package
 Target = grub
 
 [Action]
+Description = patching grub configuration
 When = PostTransaction
-Exec = /usr/bin/gnu-slash-grub
+Exec = /usr/bin/gnu-slash-grub no-update
