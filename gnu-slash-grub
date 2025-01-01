@@ -60,7 +60,7 @@ help(){
     printf "Fix GRUB boot menu nonsense\n\n";
     printf "These options can't be combined, duh\n"
     printf "dry-run             Don't apply changes; just print them\n";
-    printf "backup DIRECTORY    Backup the default file to DIRECTORY\n";
+    printf "backup DIRECTORY    Backup the configuration file to DIRECTORY\n";
     printf "force               Ignore warnings (bad)\n"
     printf "help                Display this help and exit\n";
 }
