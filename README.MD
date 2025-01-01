@@ -1,7 +1,7 @@
 ## gnu-slash-grub
 Fix GRUB boot menu nonsense
 
-TL;DR it swaps 'Linux' with 'GNU/Linux' and removes the extra 'Linux' where it's not needed. RMS approved. :thumbsup:
+TL;DR it swaps 'Linux' with 'GNU/Linux' and removes the extra 'Linux' where it's not needed. RMS approved.
 
 (take a look inside extra/example to see what actually happens)
  
