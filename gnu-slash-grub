@@ -16,106 +16,122 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# If grub is installed, thes WILL be present
-DESTDIR="/etc/grub.d";
-DESTFILE="${DESTDIR}/10_linux";
+# If grub is installed, these WILL be present
+DESTDIR="/etc/grub.d"
+DESTFILE="${DESTDIR}/10_linux"
 
 # Find grub.cfg so grub-mkconfig can be ran automatically
 GRUB_CFG="$(find /boot -type f -name grub.cfg -print -quit | head -n 1)"
 
-dry=0;
-force=0;
+dry=0
+force=0
+update=1
 
 check_cfg(){
 # Check if grub.cfg is present
     if [ -f "${GRUB_CFG}" ]; then
-        printf "Grub configuration found at %s\n" "${GRUB_CFG}";
-        printf "If this isn't your GRUB configuration, please delete it and re-run gnu-slash-grub\n";
+        printf "grub.cfg found at %s\n" "${GRUB_CFG}"
+        printf "If this is not your main file, please delete it and re-run 'gnu-slash-grub'\n"
     else
-        printf "No grub configuration found!\n";
+        printf "Error, no grub.cfg found!\n"
     fi
 }
 
 check_su(){
 # Check if being ran as root
-    if [ $EUID -ne 0 ];then
-      printf "In order to patch the configuration, the script must be ran as root\n"
-      printf "Exiting...\n"
+    if [ "$(id -u)" -ne 0 ];then
+      printf "Error, must be ran as root\n"
       exit 1
     fi
 }
 
 check_patch() {
 # Check if config was already patched
-    if [ "$(grep "GNU/Linux" "${DESTFILE}")" ] && [ "${force}" -eq 0 ]; then
-        printf "Configuration already patched!\n"
-        printf "If you want to ignore this, run 'gnu-slash-grub force'\n"
-        exit 0;
+    if grep -q "GNU/Linux" "${DESTFILE}" && [ "${force}" -eq 0 ]; then
+        printf "Error, configuration already patched\n"
+        printf "To ignore this warning run 'gnu-slash-grub force'\n"
+        exit 0
     fi
+}
+
+check_all(){
+    check_su
+    check_cfg
+    check_patch
 }
 
 help(){
     # Print help
-    printf "Usage: gnu-slash-GRUB [OPTION]... [DIRECTORY]...\n";
-    printf "Fix GRUB boot menu nonsense\n\n";
-    printf "These options can't be combined, duh\n"
-    printf "dry-run             Don't apply changes; just print them\n";
-    printf "backup DIRECTORY    Backup the configuration file to DIRECTORY\n";
+    printf "Usage: gnu-slash-GRUB [COMMAND]...\n"
+    printf "Fix GRUB boot menu nonsense\n\n"
+    printf "backup DIRECTORY    Backup the configuration file to DIRECTORY\n"
+    printf "dry-run             Don't apply changes; just print them\n"
     printf "force               Ignore warnings (bad)\n"
-    printf "help                Display this help and exit\n";
+    printf "no-update           Don't update grub\n"
+    printf "help                Display this help and exit\n"
 }
 
 if [ "${1}" ];then
 # Parse cli args
     case "${1}" in
         dry-run)
-            dry=1;
+            dry=1
             ;;
         backup)
-            if [ -d "${2}" ];then cp "${DESTFILE}" "${2}/10_linux.bak";
-            else printf "Invalid directory!\n";fi;
-            exit 0;
+            if [ -d "${2}" ];then cp "${DESTFILE}" "${2}/10_linux.bak"
+            else printf "Error, Invalid directory\n";fi
+            exit 0
             ;;
         help)
-            help;
-            exit 0;
+            help
+            exit 0
             ;;
         force)
-            printf "Warning, passing 'force' 'might fuck shit up'\n";
-            check_su;
-            force=1;
+            printf "Warning, passing 'force' 'might fuck shit up'\n"
+            printf "Warning, GRUB won't be updated\n"
+            printf "Manual intervention required\n"
+            check_su
+            update=0
+            force=1
+            ;;
+        no-update)
+            printf "Warning, GRUB won't be updated\n"
+            printf "Manual intervention required\n"
+            check_all
+            update=0
             ;;
         *)
-            printf "Invalid option %s\nTry 'gnu-slash-grub help' for more information\n" "${1}";
-            exit 1;
+            printf "Error, Invalid option %s\nTry 'gnu-slash-grub help' for more information\n" "${1}"
+            exit 1
             ;;
     esac
 else
-    check_su;
-    check_cfg;
-    check_patch;
+    check_all
 fi
+
+
 
 if [ -f "${DESTFILE}" ]; then
     if [ "${dry}" -eq 0 ];then
         # Patch config
-        sed -i 's/Loading Linux/Loading/g;s/with Linux/with/g;s/Linux/GNU\/Linux/g' "${DESTFILE}";
+        sed -i 's/Loading Linux/Loading/g;s/with Linux/with/g;s/Linux/GNU\/Linux/g' "${DESTFILE}"
     else
         # Print  what would be applied
-        sed 's/Loading Linux/Loading/g;s/with Linux/with/g;s/Linux/GNU\/Linux/g' "${DESTFILE}";
-        exit 0;
+        sed 's/Loading Linux/Loading/g;s/with Linux/with/g;s/Linux/GNU\/Linux/g' "${DESTFILE}"
+        exit 0
     fi
 else
-    exit 1;
+    exit 1
 fi
 
 # Update GRUB configuration automatically
-grub-mkconfig -o "${GRUB_CFG}";
+if [ "${update}" -eq 1 ]; then grub-mkconfig -o "${GRUB_CFG}";fi
 
 if [ $? -ge 1 ];then
-    printf "Errors occured while generating GRUB's configuration!\n"
+    printf "Errors occured while updating GRUB's configuration!\n"
     printf "Manual intervention required\n"
-    exit 1;
+    exit 1
 fi;
 
+printf "Success!"
 exit 0
